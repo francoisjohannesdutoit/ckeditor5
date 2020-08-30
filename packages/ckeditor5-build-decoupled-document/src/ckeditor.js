@@ -11,7 +11,7 @@ import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment';
 import FontSize from '@ckeditor/ckeditor5-font/src/fontsize';
 import FontFamily from '@ckeditor/ckeditor5-font/src/fontfamily';
 import FontColor from '@ckeditor/ckeditor5-font/src/fontcolor';
-import FontBackgroundColor from '@ckeditor/ckeditor5-font/src/fontbackgroundcolor';
+// import FontBackgroundColor from '@ckeditor/ckeditor5-font/src/fontbackgroundcolor';
 import UploadAdapter from '@ckeditor/ckeditor5-adapter-ckfinder/src/uploadadapter';
 import Autoformat from '@ckeditor/ckeditor5-autoformat/src/autoformat';
 import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold';
@@ -19,9 +19,10 @@ import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic';
 import Strikethrough from '@ckeditor/ckeditor5-basic-styles/src/strikethrough';
 import Underline from '@ckeditor/ckeditor5-basic-styles/src/underline';
 import BlockQuote from '@ckeditor/ckeditor5-block-quote/src/blockquote';
-import CKFinder from '@ckeditor/ckeditor5-ckfinder/src/ckfinder';
-import EasyImage from '@ckeditor/ckeditor5-easy-image/src/easyimage';
+// import CKFinder from '@ckeditor/ckeditor5-ckfinder/src/ckfinder';
+// import EasyImage from '@ckeditor/ckeditor5-easy-image/src/easyimage';
 import Heading from '@ckeditor/ckeditor5-heading/src/heading';
+import HorizontalLine from '@ckeditor/ckeditor5-horizontal-line/src/horizontalline';
 import Image from '@ckeditor/ckeditor5-image/src/image';
 import ImageCaption from '@ckeditor/ckeditor5-image/src/imagecaption';
 import ImageStyle from '@ckeditor/ckeditor5-image/src/imagestyle';
@@ -30,15 +31,51 @@ import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload';
 import Indent from '@ckeditor/ckeditor5-indent/src/indent';
 import IndentBlock from '@ckeditor/ckeditor5-indent/src/indentblock';
 import Link from '@ckeditor/ckeditor5-link/src/link';
+import LinkImage from '@ckeditor/ckeditor5-link/src/linkimage';
 import List from '@ckeditor/ckeditor5-list/src/list';
 import MediaEmbed from '@ckeditor/ckeditor5-media-embed/src/mediaembed';
 import Paragraph from '@ckeditor/ckeditor5-paragraph/src/paragraph';
 import PasteFromOffice from '@ckeditor/ckeditor5-paste-from-office/src/pastefromoffice';
-import Table from '@ckeditor/ckeditor5-table/src/table';
-import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
+// import Table from '@ckeditor/ckeditor5-table/src/table';
+// import TableToolbar from '@ckeditor/ckeditor5-table/src/tabletoolbar';
 import TextTransformation from '@ckeditor/ckeditor5-typing/src/texttransformation';
+import CodeBlock from '@ckeditor/ckeditor5-code-block/src/codeblock';
+
+import S3Adapter from './S3Adapter';
+import Plugin from '@ckeditor/ckeditor5-core/src/plugin';
 
 export default class DecoupledEditor extends DecoupledEditorBase {}
+
+class S3AdapterPlugin extends Plugin {
+	static get pluginName() {
+		return 'S3Upload';
+	}
+
+	constructor( editor ) {
+		super();
+
+		this.editor = editor;
+
+		const config = this.editor.config.get( 'S3Upload' );
+
+		const url = config.policyUrl;
+
+		if ( !url ) {
+			console.warn( 'S3Upload.policyUrl is not configured' ); // eslint-disable-line no-undef
+			return;
+		}
+
+		const mapUrl = config.mapUrl;
+
+		const modelId = config.modelId;
+
+		const modelType = config.modelType;
+
+		editor.plugins.get( 'FileRepository' ).createUploadAdapter = loader => {
+			return new S3Adapter( loader, url, mapUrl, modelId, modelType );
+		};
+	}
+}
 
 // Plugins to include in the build.
 DecoupledEditor.builtinPlugins = [
@@ -47,7 +84,7 @@ DecoupledEditor.builtinPlugins = [
 	FontSize,
 	FontFamily,
 	FontColor,
-	FontBackgroundColor,
+	// FontBackgroundColor,
 	UploadAdapter,
 	Autoformat,
 	Bold,
@@ -55,9 +92,10 @@ DecoupledEditor.builtinPlugins = [
 	Strikethrough,
 	Underline,
 	BlockQuote,
-	CKFinder,
-	EasyImage,
+	// CKFinder,
+	// EasyImage,
 	Heading,
+	HorizontalLine,
 	Image,
 	ImageCaption,
 	ImageStyle,
@@ -66,13 +104,17 @@ DecoupledEditor.builtinPlugins = [
 	Indent,
 	IndentBlock,
 	Link,
+	LinkImage,
 	List,
 	MediaEmbed,
 	Paragraph,
 	PasteFromOffice,
-	Table,
-	TableToolbar,
-	TextTransformation
+	// Table,
+	// TableToolbar,
+	TextTransformation,
+	CodeBlock,
+
+	S3AdapterPlugin,
 ];
 
 // Editor configuration.
@@ -81,17 +123,22 @@ DecoupledEditor.defaultConfig = {
 		items: [
 			'heading',
 			'|',
-			'fontfamily',
 			'fontsize',
-			'fontColor',
-			'fontBackgroundColor',
+			'fontfamily',
 			'|',
 			'bold',
 			'italic',
 			'underline',
 			'strikethrough',
+			'fontColor',
 			'|',
 			'alignment',
+			'|',
+			'imageUpload',
+			'link',
+			'blockquote',
+			'mediaEmbed',
+			'horizontalLine',
 			'|',
 			'numberedList',
 			'bulletedList',
@@ -99,14 +146,10 @@ DecoupledEditor.defaultConfig = {
 			'indent',
 			'outdent',
 			'|',
-			'link',
-			'blockquote',
-			'imageUpload',
-			'insertTable',
-			'mediaEmbed',
-			'|',
 			'undo',
-			'redo'
+			'redo',
+			'|',
+			'codeBlock'
 		]
 	},
 	image: {
@@ -120,7 +163,9 @@ DecoupledEditor.defaultConfig = {
 			'imageStyle:full',
 			'imageStyle:alignRight',
 			'|',
-			'imageTextAlternative'
+			'imageTextAlternative',
+			'|',
+			'linkImage'
 		]
 	},
 	table: {
@@ -131,5 +176,21 @@ DecoupledEditor.defaultConfig = {
 		]
 	},
 	// This value must be kept in sync with the language defined in webpack.config.js.
-	language: 'en'
+	language: 'en',
+	S3Upload: {
+		policyUrl: 'http://mta.mls.local/slate-api/uploads/ckeditor',
+		mapUrl: ( { location } ) => location
+	},
+	mediaEmbed: {
+		previewsInData: true
+	},
+	codeBlock: {
+		languages: [
+			{ language: 'plaintext', label: 'Plain text' },
+			{ language: 'css', label: 'CSS' },
+			{ language: 'xml', label: 'HTML/XML' },
+			{ language: 'javascript', label: 'JavaScript' },
+			{ language: 'php', label: 'PHP' }
+		]
+	}
 };
