@@ -20,6 +20,11 @@ export default class S3Adapter {
 		}
 	}
 
+	getCookie(name) {
+		let match = document.cookie.match(new RegExp('(^|;\\s*)(' + name + ')=([^;]*)'));
+        return (match ? decodeURIComponent(match[3]) : null);
+	}
+
 	getCredentials() {
 		return new Promise( async ( resolve, reject ) => {
 			this.file = await this.loader.file;
@@ -36,6 +41,7 @@ export default class S3Adapter {
 				`?filename=${ filename }&model_id=${ this.modelId || '' }&model_type=${ this.modelType || '' }`, true );
 			xhr.responseType = 'json';
 			xhr.setRequestHeader( 'Content-Type', 'application/json' );
+			xhr.setRequestHeader( 'X-XSRF-TOKEN', this.getCookie('XSRF-TOKEN') );
 
 			xhr.addEventListener( 'error', () => reject( 'crederr' ) );
 			xhr.addEventListener( 'abort', () => reject( 'credabort' ) );
