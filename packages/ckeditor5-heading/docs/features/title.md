@@ -11,9 +11,16 @@ This feature can be used to implement a rich-text editor with a clear division o
 
 ## Demo
 
-Use the editor below to create a document with clearly separated title and body sections.
+Use the editor to create a document with clearly separated title and body sections. You can check the content of the title and body elements in the console below.
 
 {@snippet features/title}
+
+## Related features
+
+There are more CKEditor 5 features that can help you structure your document better:
+* {@link features/headings Headings} &ndash; Divide your content into sections.
+* {@link features/indent Block indentation} &ndash; Organize your content into visually separated blocks, indent crucial paragraphs, etc.
+* {@link features/editor-placeholder Editor placeholder} &ndash; Set placeholder text to display when the content is empty. It helps users locate the editor in the application and prompts to input the content.
 
 ## Keyboard navigation
 
@@ -42,7 +49,7 @@ ClassicEditor
 
 To add this feature to your editor, install the [`@ckeditor/ckeditor5-heading`](https://www.npmjs.com/package/@ckeditor/ckeditor5-heading) package:
 
-```plaintext
+```nohighlight
 npm install --save @ckeditor/ckeditor5-heading
 ```
 

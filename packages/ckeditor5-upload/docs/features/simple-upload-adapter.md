@@ -22,7 +22,7 @@ See the [Server–side configuration](#server-side-configuration) section to lea
 
 First, install the [`@ckeditor/ckeditor5-upload`](https://www.npmjs.com/package/@ckeditor/ckeditor5-upload) package:
 
-```plaintext
+```nohighlight
 npm install --save @ckeditor/ckeditor5-upload
 ```
 
@@ -67,7 +67,7 @@ ClassicEditor
 
 			// Headers sent along with the XMLHttpRequest to the upload server.
 			headers: {
-				'X-CSRF-TOKEN': 'CSFR-Token',
+				'X-CSRF-TOKEN': 'CSRF-Token',
 				Authorization: 'Bearer <JSON Web Token>'
 			}
 		}
